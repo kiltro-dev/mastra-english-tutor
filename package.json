@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "evals": "tsx --tsconfig tsconfig.json evals/run.ts",
+    "tutor": "tsx --tsconfig tsconfig.json src/cli/main.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -30,6 +31,7 @@
     "@ai-sdk/openai-compatible": "^2.0.51",
     "@mastra/core": "^1.45.0",
     "ai": "^6.0.208",
+    "dotenv": "^17.4.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
