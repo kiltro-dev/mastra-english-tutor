@@ -3,6 +3,7 @@ import { stdin as input, stdout as output } from 'node:process';
 import * as dotenv from 'dotenv';
 import { RequestContext } from '@mastra/core/request-context';
 import { createEnglishTutorAgent } from '../agent/english-tutor.agent';
+import { resolveLlmProvider } from '../llm/resolve-llm-provider';
 import { formatTutorTurn, parseTutorReply } from './tutor-turn';
 
 interface CliOptions {
@@ -26,16 +27,18 @@ function parseArgs(argv: readonly string[]): CliOptions {
 async function main(): Promise<void> {
   dotenv.config({ path: '.env' });
 
-  const apiKey = process.env.OPENCODE_ZEN_API_KEY;
-  if (!apiKey) {
+  let provider;
+  try {
+    provider = resolveLlmProvider();
+  } catch (error) {
     console.error(
-      'OPENCODE_ZEN_API_KEY is not configured (.env). Aborting tutor demo.',
+      `${error instanceof Error ? error.message : String(error)} Aborting tutor demo.`,
     );
     process.exit(1);
   }
 
   const { level, topic } = parseArgs(process.argv.slice(2));
-  const agent = createEnglishTutorAgent({ apiKey });
+  const agent = createEnglishTutorAgent({ model: provider.createModel() });
 
   const context = new RequestContext<{ level?: string; topic?: string }>();
   if (level) context.set('level', level);

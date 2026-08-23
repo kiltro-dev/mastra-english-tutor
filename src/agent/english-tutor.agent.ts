@@ -1,16 +1,16 @@
 import { Agent } from '@mastra/core/agent';
 import { z } from 'zod';
-import { createZenModel } from '../llm/opencode-zen.provider';
+import type { createZenModel } from '../llm/opencode-zen.provider';
 import { createDictionaryTool } from '../tools/dictionary.tool';
 import { createFeedbackTool } from '../tools/feedback.tool';
 import { createSrsScheduleTool } from '../tools/srs-schedule.tool';
 import type { DictionaryEntry, DictionaryLookupFn } from '../tools/dictionary.tool';
 
+export type TutorModel = ReturnType<typeof createZenModel>;
+
 export interface EnglishTutorAgentDeps {
-  apiKey: string;
+  model: TutorModel;
   dictionaryLookup?: DictionaryLookupFn;
-  baseURL?: string;
-  model?: string;
 }
 
 export function createEnglishTutorAgent(deps: EnglishTutorAgentDeps): Agent {
@@ -48,11 +48,7 @@ export function createEnglishTutorAgent(deps: EnglishTutorAgentDeps): Agent {
         .filter((l) => l !== null)
         .join('\n');
     },
-    model: createZenModel({
-      apiKey: deps.apiKey,
-      ...(deps.baseURL ? { baseURL: deps.baseURL } : {}),
-      ...(deps.model ? { model: deps.model } : {}),
-    }),
+    model: deps.model,
     tools: {
       dictionary: createDictionaryTool(dictionaryLookup),
       feedback: createFeedbackTool(),

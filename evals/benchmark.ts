@@ -3,6 +3,7 @@ import { RequestContext } from '@mastra/core/request-context';
 import { createEnglishTutorAgent } from '../src/agent/english-tutor.agent';
 import { EVAL_CASES, evaluateTutorOutput } from '../src/evals/tutor.evals';
 import type { EvalCase } from '../src/evals/tutor.evals';
+import { OpencodeZenProvider } from '../src/llm/opencode-zen.provider';
 
 dotenv.config({ path: '.env' });
 
@@ -56,7 +57,8 @@ async function main() {
   const rows: Row[] = [];
 
   for (const model of MODELS) {
-    const agent = createEnglishTutorAgent({ apiKey, model });
+    const provider = new OpencodeZenProvider({ apiKey, model });
+    const agent = createEnglishTutorAgent({ model: provider.createModel() });
     console.log(`\n=== ${model} ===`);
     for (const evalCase of EVAL_CASES) {
       const ctx = new RequestContext<{ level?: string; topic?: string }>();
