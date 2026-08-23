@@ -1,7 +1,7 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
 export const OPENCODE_ZEN_BASE_URL = 'https://opencode.ai/zen/v1';
-export const OPENCODE_ZEN_MODEL = 'x-preview-f-free';
+export const OPENCODE_ZEN_MODEL = 'nemotron-3-ultra-free';
 
 export interface ZenConfig {
   apiKey: string;
