@@ -9,7 +9,7 @@ I built this agent to explore what a **production-grade conversational AI tutor*
 ## Stack
 
 - **Mastra** v1.60 (agent + tools) · TypeScript strict · Zod schemas
-- **opencode zen** — `deepseek-v4-flash-free` via `@ai-sdk/openai-compatible` (free endpoint)
+- **opencode zen** — `x-preview-f-free` via `@ai-sdk/openai-compatible` (free endpoint)
 - **Vitest** (TDD, coverage thresholds) · ESLint + Prettier · GitHub Actions CI
 - Commit hygiene: Husky + commitlint (Conventional Commits)
 

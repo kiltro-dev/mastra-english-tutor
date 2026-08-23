@@ -1,7 +1,7 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
 export const OPENCODE_ZEN_BASE_URL = 'https://opencode.ai/zen/v1';
-export const OPENCODE_ZEN_MODEL = 'deepseek-v4-flash-free';
+export const OPENCODE_ZEN_MODEL = 'x-preview-f-free';
 
 export interface ZenConfig {
   apiKey: string;
