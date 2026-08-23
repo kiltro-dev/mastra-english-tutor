@@ -15,6 +15,7 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       exclude: [
         'src/index.ts',
+        'src/cli/main.ts',
         'src/evals/**',
         'src/agent/**',
         'src/llm/**',
