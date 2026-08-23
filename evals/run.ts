@@ -2,18 +2,23 @@ import * as dotenv from 'dotenv';
 import { RequestContext } from '@mastra/core/request-context';
 import { createEnglishTutorAgent } from '../src/agent/english-tutor.agent';
 import { EVAL_CASES, evaluateTutorOutput, runEvalCase } from '../src/evals/tutor.evals';
+import { resolveLlmProvider } from '../src/llm/resolve-llm-provider';
 import { TutorResponseSchema } from '../src/schemas/tutor-response.schema';
 
 dotenv.config({ path: '.env' });
 
 async function main() {
-  const apiKey = process.env.OPENCODE_ZEN_API_KEY;
-  if (!apiKey) {
-    console.error('OPENCODE_ZEN_API_KEY no está configurada (.env). Abortando evals.');
+  let provider;
+  try {
+    provider = resolveLlmProvider();
+  } catch (error) {
+    console.error(
+      `${error instanceof Error ? error.message : String(error)} Aborting evals.`,
+    );
     process.exit(1);
   }
 
-  const agent = createEnglishTutorAgent({ apiKey });
+  const agent = createEnglishTutorAgent({ model: provider.createModel() });
 
   let passed = 0;
   for (const evalCase of EVAL_CASES) {
