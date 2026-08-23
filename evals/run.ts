@@ -1,8 +1,8 @@
 import * as dotenv from 'dotenv';
 import { RequestContext } from '@mastra/core/request-context';
 import { createEnglishTutorAgent } from '../src/agent/english-tutor.agent';
-import { EVAL_CASES, runEvalCase } from '../src/evals/tutor.evals';
-import type { EvalCase, EvalResult } from '../src/evals/tutor.evals';
+import { EVAL_CASES, evaluateTutorOutput, runEvalCase } from '../src/evals/tutor.evals';
+import { TutorResponseSchema } from '../src/schemas/tutor-response.schema';
 
 dotenv.config({ path: '.env' });
 
@@ -13,27 +13,7 @@ async function main() {
     process.exit(1);
   }
 
-  const options = { apiKey };
-  const agent = createEnglishTutorAgent(options);
-
-  const buildResult = (evalCase: EvalCase, text: string): EvalResult => {
-    const missing = evalCase.expected.mustContain.filter(
-      (needle: string) => !text.toLowerCase().includes(needle.toLowerCase()),
-    );
-    const forbidden = evalCase.expected.mustNotContain.filter((needle: string) =>
-      text.toLowerCase().includes(needle.toLowerCase()),
-    );
-    const errors = [
-      ...missing.map((n: string) => `falta "${n}"`),
-      ...forbidden.map((n: string) => `no debería contener "${n}"`),
-    ];
-    return {
-      id: evalCase.id,
-      name: evalCase.name,
-      pass: errors.length === 0,
-      errors,
-    };
-  };
+  const agent = createEnglishTutorAgent({ apiKey });
 
   let passed = 0;
   for (const evalCase of EVAL_CASES) {
@@ -46,7 +26,15 @@ async function main() {
         return res.text;
       },
       async (_input, output) => {
-        return buildResult(evalCase, JSON.stringify(output));
+        let parsed: unknown = output;
+        if (typeof output === 'string') {
+          try {
+            parsed = TutorResponseSchema.parse(JSON.parse(output));
+          } catch {
+            parsed = output;
+          }
+        }
+        return evaluateTutorOutput(evalCase, parsed);
       },
       evalCase,
     );

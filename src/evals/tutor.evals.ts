@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import {
   CorrectionSchema,
   TutorResponseSchema,
@@ -38,7 +37,6 @@ export const EVAL_CASES: EvalCase[] = [
     expected: {
       mustContain: ['apple'],
       mustNotContain: [],
-      minScore: 5,
     },
   },
 ];
@@ -59,40 +57,6 @@ export async function runEvalCase(
   return evaluator(evalCase.input, output);
 }
 
-export async function defaultEvaluator(
-  _input: string,
-  output: unknown,
-): Promise<EvalResult> {
-  const parsed = z.unknown().safeParse(output);
-  if (!parsed.success) {
-    return {
-      id: 'unknown',
-      name: 'output no parseable',
-      pass: false,
-      errors: ['El output no es un objeto válido'],
-    };
-  }
-
-  const schema = TutorResponseSchema.safeParse(output);
-  if (!schema.success) {
-    return {
-      id: 'unknown',
-      name: 'schema inválido',
-      pass: false,
-      errors: schema.error.issues.map(
-        (issue) => `${issue.path.join('.')}: ${issue.message}`,
-      ),
-    };
-  }
-
-  return {
-    id: 'unknown',
-    name: 'ok',
-    pass: true,
-    errors: [],
-  };
-}
-
 export function validateCorrectionShape(correction: unknown): boolean {
   return CorrectionSchema.safeParse(correction).success;
 }
@@ -107,4 +71,56 @@ export function checkNotContains(text: string, mustNotContain: string[]): string
   return mustNotContain.filter((needle) =>
     text.toLowerCase().includes(needle.toLowerCase()),
   );
+}
+
+/**
+ * Evalúa el output estructurado del tutor contra un caso de eval.
+ * - mustContain: se busca en reply_text y en corrections[].corrected
+ *   (el tutor debe producir la forma correcta en alguna de esas partes).
+ * - mustNotContain: solo sobre reply_text; corrections[].original cita el
+ *   error del alumno por diseño, por lo que no debe evaluarse ahí.
+ */
+export function evaluateTutorOutput(evalCase: EvalCase, output: unknown): EvalResult {
+  const parsed = TutorResponseSchema.safeParse(output);
+  if (!parsed.success) {
+    return {
+      id: evalCase.id,
+      name: evalCase.name,
+      pass: false,
+      errors: parsed.error.issues.map(
+        (issue) => `${issue.path.join('.')}: ${issue.message}`,
+      ),
+    };
+  }
+
+  const { reply_text, corrections, pronunciation_score } = parsed.data;
+  const producedText = [reply_text, ...corrections.map((c) => c.corrected)].join('\n');
+
+  const errors = [
+    ...checkContains(producedText, evalCase.expected.mustContain).map(
+      (n) => `falta "${n}"`,
+    ),
+    ...checkNotContains(reply_text, evalCase.expected.mustNotContain).map(
+      (n) => `no debería contener "${n}"`,
+    ),
+  ];
+
+  if (
+    evalCase.expected.minScore !== undefined &&
+    (pronunciation_score === undefined ||
+      pronunciation_score < evalCase.expected.minScore)
+  ) {
+    errors.push(
+      `pronunciation_score ${
+        pronunciation_score ?? 'ausente'
+      } < mínimo esperado ${evalCase.expected.minScore}`,
+    );
+  }
+
+  return {
+    id: evalCase.id,
+    name: evalCase.name,
+    pass: errors.length === 0,
+    errors,
+  };
 }
