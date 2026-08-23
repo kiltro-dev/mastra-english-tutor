@@ -24,3 +24,7 @@ Usar **opencode zen** como proveedor LLM del agente:
 ## Enmienda (2026-08-22)
 
 `deepseek-v4-flash-free` fue retirado del catálogo free de opencode zen. Nuevo modelo por defecto: **`x-preview-f-free`** (Ox Alpha Free), mismo endpoint y patrón. El override `OPENCODE_ZEN_MODEL` permite cambiar de modelo sin tocar código; los evals con ground truth validan el swap antes de mergear.
+
+## Enmienda (2026-08-23)
+
+Benchmark de los 6 modelos free del catálogo contra los eval cases (`evals/benchmark.mts`): `x-preview-f-free` resultó lento (~80s para 2 casos, loop de reasoning) y en una corrida devolvió texto fuera del schema; `mimo-v2.5-free` y `big-pickle` cayeron en rate limit (429). Nuevo default: **`nemotron-3-ultra-free`** — 2/2 evals, el más rápido (25s total, caso de gramática en 4s), con un único 502 transitorio resuelto por reintento.
