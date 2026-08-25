@@ -1,5 +1,8 @@
 # Mastra English Tutor
 
+[![CI](https://github.com/kiltro-dev/mastra-english-tutor/actions/workflows/ci.yml/badge.svg)](https://github.com/kiltro-dev/mastra-english-tutor/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 > AI English tutor agent built with [Mastra](https://mastra.ai): listens, corrects grammar, plans spaced-repetition review, and evaluates its own output against ground truth.
 
 ## Why this project exists
@@ -41,6 +44,17 @@ npm run test           # tests (sin red)
 npm run typecheck      # strict TS
 npm run evals          # evalúa el agente contra ground truth (requiere .env)
 ```
+
+## Demo
+
+Interactive CLI tutor session (requires `OPENCODE_ZEN_API_KEY` in `.env`):
+
+```bash
+npm run tutor                          # start with defaults (level auto)
+npm run tutor -- --level A2 --topic travel   # level + topic
+```
+
+Type in English, get `reply_text` + `corrections[]` + `next_lesson` validated by Zod. `Ctrl+C` to exit. See `src/cli/main.ts` for the glue layer.
 
 ## Scripts
 
